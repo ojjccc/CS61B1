@@ -197,8 +197,9 @@ class DList{
 	
 	public void insertFront(Pixel samePixel, int number){
 		DListNode newNode = new DListNode(samePixel,number);
-		newNode.prev=sentinel;
 		newNode.next=sentinel.next;
+		newNode.prev=sentinel;
+		//newNode.next=sentinel.next;
 		sentinel.next=newNode;
 		newNode.next.prev=newNode;
 	}
@@ -238,14 +239,11 @@ public class RunLengthEncoding implements Iterable {
    *  @param height the height of the image.
    */
 
-  public RunLengthEncoding(int width, int height) {
-	  imgwidth=width;
-	  imgheight=height;
-	  runDList.insertEnd(new Pixel(), imgwidth*imgheight);
-	  
-    // Your solution here.
-  }
-
+    public RunLengthEncoding(int width, int height) {
+        imgheight = height;
+        imgwidth = width;
+        runDList.insertFront(new Pixel(), width * height);
+    }
   /**
    *  RunLengthEncoding() (with six parameters) constructs a run-length
    *  encoding of a PixImage of the specified width and height.  The runs of
@@ -272,9 +270,10 @@ public class RunLengthEncoding implements Iterable {
                            int[] blue, int[] runLengths) {
 	  imgwidth=width;
 	  imgheight=height;
+	  
 	  for(int i=0;i<red.length;i++){
 		  Pixel newPixel = new Pixel(red[i],green[i],blue[i]);
-		  runDList.insertEnd(newPixel, runLengths[i]);
+		  runDList.insertFront(newPixel, runLengths[i]);
   }
 	  
     // Your solution here.
@@ -329,11 +328,12 @@ public class RunLengthEncoding implements Iterable {
 	  RunIterator runIterator = iterator();
 	  int currentPixel = 0;
 	  while(runIterator.hasNext()){
-		  for (int i=0;i<=runIterator.next()[0];i++){
+	      int[] numberAndPixel = runIterator.next();
+		  for (int i=0;i<numberAndPixel[0];i++){
 			  int y=currentPixel/imgwidth;
 			  int x=currentPixel-y*imgwidth;
-			  runPixImage.setPixel(x, y, (short) runIterator.next()[1], 
-					  (short) runIterator.next()[2], (short) runIterator.next()[3]);
+			  runPixImage.setPixel(x, y, (short) numberAndPixel[1], 
+					  (short)numberAndPixel[2], (short)numberAndPixel[3]);
 			  currentPixel++;
 		  }
 	  }
@@ -470,7 +470,6 @@ public class RunLengthEncoding implements Iterable {
   private void setRunPixel(DListNode node, Pixel targetPixel, int targetIndex, int currentIndex) {
       if (node.number == 1) {
           node.nodePixel = targetPixel;
-          checkRun();
       } else {
           DListNode newNode1 = new DListNode(node.nodePixel, targetIndex - currentIndex + node.number - 1);
 //          System.out.println(newNode1.number+""+newNode1.nodePixel);
@@ -492,49 +491,11 @@ public class RunLengthEncoding implements Iterable {
           newNode3.next = node.next;
           node.next.prev = newNode3;
 
-          checkRun();
+          //checkRun();
       }
   }
 
-  /**private void checkNode(DListNode node) {
-      if (node.number == 0) {
-          //            System.out.println("delete"+node.nodePixel);
-          node.prev.next = node.next;
-          node.next.prev = node.prev;
-          if (node.next.nodePixel != null) {
-              checkNode(node.next);
-          }
-      } else {
-          if (node.prev.nodePixel != null && node.nodePixel.equals(node.prev.nodePixel)) {
-              System.out.println("merge" + node.nodePixel);
-              node.prev.number += node.number;
-              System.out.println("node.prev.number" + node.prev.number + node.nodePixel);
-              node.prev.next = node.next;
-              node.next.prev = node.prev;
-              if (node.next.nodePixel != null) {
-                  checkNode(node.next);
-              }
-          }
-      }
-  }**/
 
-  private void checkRun() {
-      DListNode current = runDList.head.next;
-      while (current.nodePixel != null) {
-          if (current.number == 0) {
-              current.prev.next = current.next;
-              current.next.prev = current.prev;
-
-          } else {
-              if (current.nodePixel.equals(current.prev.nodePixel)) {
-                  current.prev.number += current.number;
-                  current.prev.next = current.next;
-                  current.next.prev = current.prev;
-              }
-          }
-          current = current.next;
-      }
-  }
 
 
   /**
